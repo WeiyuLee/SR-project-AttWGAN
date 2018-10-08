@@ -104,7 +104,7 @@ class MODEL(object):
         
         self.model_ticket = model_ticket
         
-        self.model_list = ["EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST", "EDSR_RaGAN_MNIST"]
+        self.model_list = ["att_on_dis_RCAN", "EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST", "EDSR_RaGAN_MNIST"]
         
         self.curr_epoch = curr_epoch
         
@@ -301,6 +301,12 @@ class MODEL(object):
             return list(zip(lr_list + lr_list2, hr_list + hr_list))
         else:
             return list(zip(lr_list, hr_list))
+
+    def build_att_on_dis_RCAN(self):
+        self.build_EDSR_WGAN()
+
+    def train_att_on_dis_RCAN(self):
+        self.train_EDSR_WGAN()
 
     def build_EDSR_RaGAN(self):###
         """
