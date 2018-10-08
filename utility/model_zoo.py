@@ -574,7 +574,7 @@ class model_zoo:
 
     def build_model(self, kwargs = {}):
 
-        model_list = ["EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST", "EDSR_RaGAN_MNIST"]
+        model_list = ["EDSR_WGAN_att_on_dis_RCAN", "EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST", "EDSR_RaGAN_MNIST"]
         
         if self.model_ticket not in model_list:
             print("sorry, wrong ticket!")

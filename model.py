@@ -104,13 +104,16 @@ class MODEL(object):
         
         self.model_ticket = model_ticket
         
-        self.model_list = ["att_on_dis_RCAN", "EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST", "EDSR_RaGAN_MNIST"]
+        self.model_list = ["EDSR_WGAN_att_on_dis_RCAN", "EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST", "EDSR_RaGAN_MNIST"]
         
         self.curr_epoch = curr_epoch
         
         self.build_model()        
     
-    def build_model(self):###              
+    def build_model(self):### 
+
+        print(self.model_ticket)
+        print(self.model_list)             
         if self.model_ticket not in self.model_list:
             print("sorry, wrong ticket!")
             return 0
@@ -244,8 +247,6 @@ class MODEL(object):
                 file_name = [os.path.basename(hr_imgs[i]) for i in range(len(hr_imgs))]
                 lr_imgs.append([os.path.join(LR_path, file_name[i].split(".")[0] + 'x' + str(self.scale)+'.' + file_name[i].split(".")[1]) for i in range(len(hr_imgs))])
             
-
-
         elif type == "test":
 
             lr_imgs = []
@@ -302,10 +303,10 @@ class MODEL(object):
         else:
             return list(zip(lr_list, hr_list))
 
-    def build_att_on_dis_RCAN(self):
+    def build_EDSR_WGAN_att_on_dis_RCAN(self):
         self.build_EDSR_WGAN()
 
-    def train_att_on_dis_RCAN(self):
+    def train_EDSR_WGAN_att_on_dis_RCAN(self):
         self.train_EDSR_WGAN()
 
     def build_EDSR_RaGAN(self):###
@@ -667,9 +668,13 @@ class MODEL(object):
 
         # Define dataset path
         #96X96
-        test_dataset = self.load_divk("/home/wei/ML/dataset/SuperResolution/Set5/pretrain_Set5/validation/X{}/".format(self.scale), type="test_baseline")
-#        dataset = self.load_divk("/home/wei/ML/dataset/SuperResolution/DIV2K/pretrain_DIV2K/", lrtype='all', type='train')
-        dataset = self.load_divk("/home/wei/ML/dataset/SuperResolution/DIV2K/pretrain_DIV2K/", lrtype='bicubic', type='train') 
+
+        
+        test_dataset = self.load_divk(self.test_dir+"/X{}".format(self.scale), type='test_baseline')
+        dataset = self.load_divk(self.train_dir, lrtype='bicubic', type='train')
+        #test_dataset = self.load_divk("/home/wei/ML/dataset/SuperResolution/Set5/pretrain_Set5/validation/X{}/".format(self.scale), type="test_baseline")
+        #dataset = self.load_divk("/home/wei/ML/dataset/SuperResolution/DIV2K/pretrain_DIV2K/", lrtype='all', type='train')
+        #dataset = self.load_divk("/home/wei/ML/dataset/SuperResolution/DIV2K/pretrain_DIV2K/", lrtype='bicubic', type='train') 
 
         log_dir = os.path.join(self.log_dir, self.ckpt_name, "log")
         if not os.path.exists(log_dir):
