@@ -351,6 +351,143 @@ class model_zoo:
                     
             return d_logits
 
+    def RCAN_WGAN_att(self, kwargs):
+
+        reuse = kwargs["reuse"]
+        d_inputs = kwargs["d_inputs"]
+        is_training = kwargs["is_training"]
+        net = kwargs["net"]
+        
+        init = tf.random_normal_initializer(stddev=0.01)
+
+        feature_size = 64
+        scaling_factor = 1
+
+        DEPTH = 64
+
+        model_params = {
+
+                        # Generator                        
+                        'conv1': [3,3,feature_size],
+                        'output_conv': [3,3,3],
+
+                        # Discriminator                        
+                        'conv1_wgan': [5,5,DEPTH],
+                        'conv2_wgan': [5,5,DEPTH*2], 
+                        'conv3_wgan': [5,5,DEPTH*4], 
+                        'conv4_wgan': [5,5,DEPTH*8], 
+                        'd_output_wgan': [5,5,1],                                       
+
+                        }
+        
+        # CA
+        def channel_attention(image_input, initializer, name, shrink_ratio=0.25):
+
+            _,_ , _, c = image_input.get_shape().as_list()
+        
+            with tf.variable_scope("CA"):
+               att_net = tf.reduce_mean(image_input, axis=[1,2], keep_dims=True)
+#               att_net = tf.reshape(att_net, [-1, 1, 1, c])
+               att_net = nf.convolution_layer(att_net, [1,1,int(c*shrink_ratio)], [1,1,1,1],name=name+"down_scaling", activat_fn=tf.nn.relu, initializer=initializer)
+               att_net = nf.convolution_layer(att_net, [1,1,c], [1,1,1,1],name=name+"up_scaling", activat_fn=tf.nn.sigmoid, initializer=initializer)
+               layer_output = tf.multiply(image_input, att_net, name= name+"output")
+        
+               return layer_output                        
+            
+        # RCAB
+        def residual_channel_attention_block(image_input, initializer, name):
+            
+            with tf.variable_scope("RCAB"):
+                x = nf.convolution_layer(image_input, model_params["conv1"], [1,1,1,1], name=name+"_conv1", activat_fn=tf.nn.relu, initializer=initializer)
+                x = nf.convolution_layer(x,           model_params["conv1"], [1,1,1,1], name=name+"_conv2", activat_fn=tf.nn.relu, initializer=initializer)
+
+                CA_output = channel_attention(x, initializer=initializer, name="CA")
+
+                RCAB_output = tf.add(image_input, CA_output)
+                
+                return RCAB_output
+
+        # RG
+        def residual_group(image_input, initializer, name, RCAB_num=20):
+            
+            with tf.variable_scope("RG"):
+                
+                x = image_input
+                
+                for i in range(RCAB_num):
+                    x = residual_channel_attention_block(x, initializer=initializer, name="RCAB_"+str(i))
+                    
+                x = nf.convolution_layer(x, model_params["conv1"], [1,1,1,1], name=name+"_conv", activat_fn=tf.nn.relu, initializer=initializer)    
+                RG_output = tf.add(x, image_input)
+                
+                return RG_output
+
+        # RIR
+        def residual_in_residual(image_input, initializer, name, RG_num=10):
+            
+            with tf.variable_scope("RIR"):
+                
+                x = image_input
+                
+                for i in range(RG_num):
+                    x = residual_group(x, initializer=initializer, name="RG_"+str(i))
+
+                x = nf.convolution_layer(x, model_params["conv1"], [1,1,1,1], name=name+"_conv", activat_fn=tf.nn.relu, initializer=initializer)    
+                RIR_output = tf.add(x, image_input)
+                
+                return RIR_output
+                
+        if net is "Gen":
+        
+            ### Generator
+            with tf.variable_scope("RCAN_gen", reuse=reuse):     
+                input_conv_output = nf.convolution_layer(self.inputs, model_params["conv1"], [1,1,1,1], name="input_conv", activat_fn=tf.nn.relu, initializer=init)    
+                
+                RIR_output = residual_in_residual(input_conv_output, initializer=init, name="RIR")
+                
+                output_conv_output = nf.convolution_layer(RIR_output, model_params["output_conv"], [1,1,1,1], name="output_conv", activat_fn=tf.nn.relu, initializer=init)                
+                               
+                return output_conv_output
+
+        elif net is "Dis":
+            d_model = kwargs["d_model"]            
+            
+            ### Discriminator
+            num_resblock = 2
+            
+            input_gan = d_inputs 
+            
+            with tf.variable_scope("RCAN_dis", reuse=reuse):     
+
+                if d_model is "PatchWGAN_GP":    
+
+                    layer1_1 = nf.convolution_layer(input_gan,    model_params["conv1_wgan"],    [1,1,1,1], name="conv1_wgan_1",     activat_fn=nf.lrelu, initializer=init)
+                    layer1_2 = nf.convolution_layer(layer1_1,    model_params["conv1_wgan"],    [1,1,1,1], name="conv1_wgan_2",     activat_fn=nf.lrelu, initializer=init)
+                    layer1_3 = nf.convolution_layer(layer1_1 + layer1_2,       model_params["conv1_wgan"],    [1,2,2,1], name="conv1_wgan_3",     activat_fn=nf.lrelu, initializer=init)
+#                    layer1_3 = nf.convolution_layer(layer1_1 + layer1_2,       model_params["conv1_wgan"],    [1,1,1,1], name="conv1_wgan_3",     activat_fn=nf.lrelu, initializer=init)
+                    
+                    layer2_1 = nf.convolution_layer(layer1_3,       model_params["conv2_wgan"],    [1,1,1,1], name="conv2_wgan_1",     activat_fn=nf.lrelu, initializer=init)
+                    layer2_2 = nf.convolution_layer(layer2_1,       model_params["conv2_wgan"],    [1,1,1,1], name="conv2_wgan_2",     activat_fn=nf.lrelu, initializer=init)
+                    layer2_3 = nf.convolution_layer(layer2_1 + layer2_2,       model_params["conv2_wgan"],    [1,2,2,1], name="conv2_wgan_3",     activat_fn=nf.lrelu, initializer=init)
+#                    layer2_3 = nf.convolution_layer(layer2_1 + layer2_2,       model_params["conv2_wgan"],    [1,1,1,1], name="conv2_wgan_3",     activat_fn=nf.lrelu, initializer=init)
+                            
+                    layer3_1 = nf.convolution_layer(layer2_3,       model_params["conv3_wgan"],    [1,1,1,1], name="conv3_wgan_1",     activat_fn=nf.lrelu, initializer=init)
+                    layer3_2 = nf.convolution_layer(layer3_1,       model_params["conv3_wgan"],    [1,1,1,1], name="conv3_wgan_2",     activat_fn=nf.lrelu, initializer=init)
+                    layer3_3 = nf.convolution_layer(layer3_1 + layer3_2,       model_params["conv3_wgan"],    [1,2,2,1], name="conv3_wgan_3",     activat_fn=nf.lrelu, initializer=init)
+#                    layer3_3 = nf.convolution_layer(layer3_1 + layer3_2,       model_params["conv3_wgan"],    [1,1,1,1], name="conv3_wgan_3",     activat_fn=nf.lrelu, initializer=init)
+
+                    layer4_1 = nf.convolution_layer(layer3_3,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_1",  activat_fn=nf.lrelu, initializer=init)
+                    output = nf.convolution_layer(layer4_1,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_2",  activat_fn=nf.lrelu, initializer=init)
+                            
+                    d_logits = output
+
+                    return [d_logits, tf.reduce_mean(layer1_3)]
+                
+                else:
+                    print("d_model parameter error!")
+                    
+            return d_logits
+
     def EDSR_WGAN_MNIST(self, kwargs):
 
         reuse = kwargs["reuse"]
@@ -480,7 +617,7 @@ class model_zoo:
 
     def build_model(self, kwargs = {}):
 
-        model_list = ["EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST", "EDSR_RaGAN_MNIST"]
+        model_list = ["EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "RCAN_WGAN_att", "EDSR_WGAN_MNIST", "EDSR_RaGAN_MNIST"]
         
         if self.model_ticket not in model_list:
             print("sorry, wrong ticket!")
