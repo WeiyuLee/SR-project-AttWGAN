@@ -95,7 +95,7 @@ def fc_layer(inputs, out_shape, name,initializer=tf.contrib.layers.xavier_initia
 def inception_v1(inputs, module_shape, name, flatten = False ,padding = 'SAME',initializer=tf.contrib.layers.xavier_initializer(), activat_fn=tf.nn.relu):
     
     
-    
+
     with tf.variable_scope(name):
         
             with tf.variable_scope("1x1"):
