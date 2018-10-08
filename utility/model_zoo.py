@@ -355,13 +355,11 @@ class model_zoo:
 
         reuse = kwargs["reuse"]
         d_inputs = kwargs["d_inputs"]
-        is_training = kwargs["is_training"]
         net = kwargs["net"]
         
         init = tf.random_normal_initializer(stddev=0.01)
 
         feature_size = 64
-        scaling_factor = 1
 
         DEPTH = 64
 
@@ -387,7 +385,6 @@ class model_zoo:
         
             with tf.variable_scope("CA"):
                att_net = tf.reduce_mean(image_input, axis=[1,2], keep_dims=True)
-#               att_net = tf.reshape(att_net, [-1, 1, 1, c])
                att_net = nf.convolution_layer(att_net, [1,1,int(c*shrink_ratio)], [1,1,1,1],name=name+"down_scaling", activat_fn=tf.nn.relu, initializer=initializer)
                att_net = nf.convolution_layer(att_net, [1,1,c], [1,1,1,1],name=name+"up_scaling", activat_fn=tf.nn.sigmoid, initializer=initializer)
                layer_output = tf.multiply(image_input, att_net, name= name+"output")
@@ -397,9 +394,9 @@ class model_zoo:
         # RCAB
         def residual_channel_attention_block(image_input, initializer, name):
             
-            with tf.variable_scope("RCAB"):
+            with tf.variable_scope("RCAB_"+name):
                 x = nf.convolution_layer(image_input, model_params["conv1"], [1,1,1,1], name=name+"_conv1", activat_fn=tf.nn.relu, initializer=initializer)
-                x = nf.convolution_layer(x,           model_params["conv1"], [1,1,1,1], name=name+"_conv2", activat_fn=tf.nn.relu, initializer=initializer)
+                x = nf.convolution_layer(x,           model_params["conv1"], [1,1,1,1], name=name+"_conv2", activat_fn=None, initializer=initializer)
 
                 CA_output = channel_attention(x, initializer=initializer, name="CA")
 
@@ -410,14 +407,14 @@ class model_zoo:
         # RG
         def residual_group(image_input, initializer, name, RCAB_num=20):
             
-            with tf.variable_scope("RG"):
+            with tf.variable_scope("RG_"+name):
                 
                 x = image_input
                 
                 for i in range(RCAB_num):
-                    x = residual_channel_attention_block(x, initializer=initializer, name="RCAB_"+str(i))
+                    x = residual_channel_attention_block(x, initializer=initializer, name=str(i))
                     
-                x = nf.convolution_layer(x, model_params["conv1"], [1,1,1,1], name=name+"_conv", activat_fn=tf.nn.relu, initializer=initializer)    
+                x = nf.convolution_layer(x, model_params["conv1"], [1,1,1,1], name=name+"_conv", activat_fn=None, initializer=initializer)    
                 RG_output = tf.add(x, image_input)
                 
                 return RG_output
@@ -430,9 +427,9 @@ class model_zoo:
                 x = image_input
                 
                 for i in range(RG_num):
-                    x = residual_group(x, initializer=initializer, name="RG_"+str(i))
+                    x = residual_group(x, initializer=initializer, name=str(i))
 
-                x = nf.convolution_layer(x, model_params["conv1"], [1,1,1,1], name=name+"_conv", activat_fn=tf.nn.relu, initializer=initializer)    
+                x = nf.convolution_layer(x, model_params["conv1"], [1,1,1,1], name=name+"_conv", activat_fn=None, initializer=initializer)    
                 RIR_output = tf.add(x, image_input)
                 
                 return RIR_output
@@ -441,11 +438,11 @@ class model_zoo:
         
             ### Generator
             with tf.variable_scope("RCAN_gen", reuse=reuse):     
-                input_conv_output = nf.convolution_layer(self.inputs, model_params["conv1"], [1,1,1,1], name="input_conv", activat_fn=tf.nn.relu, initializer=init)    
+                input_conv_output = nf.convolution_layer(self.inputs, model_params["conv1"], [1,1,1,1], name="input_conv", activat_fn=None, initializer=init)    
                 
                 RIR_output = residual_in_residual(input_conv_output, initializer=init, name="RIR")
                 
-                output_conv_output = nf.convolution_layer(RIR_output, model_params["output_conv"], [1,1,1,1], name="output_conv", activat_fn=tf.nn.relu, initializer=init)                
+                output_conv_output = nf.convolution_layer(RIR_output, model_params["output_conv"], [1,1,1,1], name="output_conv", activat_fn=None, initializer=init)                
                                
                 return output_conv_output
 

@@ -208,8 +208,8 @@ class config:
 		train_config["scale"] = 4 # The size of scale factor for preprocessing input image [3]
 		train_config["train_extract_stride"] = 14 #The size of stride to apply input image [14]
 		train_config["test_extract_stride"] = train_config["label_size"] #The size of stride to apply input image [14]
-		train_config["checkpoint_dir"] = "/home/wei/ML/model/SuperResolution/SR-project-prototype/" #Name of checkpoint directory [checkpoint]
-		train_config["log_dir"] = "/home/wei/ML/model/SuperResolution/SR-project-prototype/log/" #Name of checkpoint directory [checkpoint]
+		train_config["checkpoint_dir"] = "/home/wei/ML/model/SuperResolution/SR-project-AttWGAN/" #Name of checkpoint directory [checkpoint]
+		train_config["log_dir"] = "/home/wei/ML/model/SuperResolution/SR-project-AttWGAN/log/" #Name of checkpoint directory [checkpoint]
 		train_config["output_dir"] = "output" # Name of sample directory [output]
 		train_config["train_dir"] =  "Train" # Name of train dataset directory
 		train_config["test_dir"] = "Test/Set5" # Name of test dataset directory [Test/Set5]
