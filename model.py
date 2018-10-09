@@ -104,7 +104,7 @@ class MODEL(object):
         
         self.model_ticket = model_ticket
 
-        self.model_list = ["EDSR_WGAN_att_on_dis_RCAN", "EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST", "EDSR_RaGAN_MNIST"]
+        self.model_list = ["RCAN_WGAN_att_on_dis", "EDSR_WGAN_att_on_dis_RCAN", "EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST", "EDSR_RaGAN_MNIST"]
 
         
         self.curr_epoch = curr_epoch
@@ -309,6 +309,12 @@ class MODEL(object):
 
     def train_EDSR_WGAN_att_on_dis_RCAN(self):
         self.train_EDSR_WGAN()
+
+    def build_RCAN_WGAN_att_on_dis(self):
+        self.build_RCAN_WGAN_att()
+
+    def train_RCAN_WGAN_att_on_dis(self):
+        self.train_RCAN_WGAN_att()
 
     def build_EDSR_RaGAN(self):###
         """
@@ -1431,10 +1437,10 @@ class MODEL(object):
 
         # Define dataset path
         #96X96
-#        test_dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/Set5/pretrain_Set5/validation/X{}/".format(self.scale), type="test_baseline")
-#        dataset = self.load_divk("/home/wei/ML/dataset/SuperResolution/DIV2K/pretrain_DIV2K/", lrtype='bicubic', type='train') 
-        test_dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/Set5/pretrain_Set5_RCAN/validation/X{}/".format(self.scale), type="test_baseline")
-        dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/DIV2K/pretrain_DIV2K_RCAN/", lrtype='bicubic', type='train')   
+        test_dataset = self.load_divk(self.test_dir+"/X{}".format(self.scale), type='test_baseline')
+        dataset = self.load_divk(self.train_dir, lrtype='bicubic', type='train')
+        # test_dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/Set5/pretrain_Set5_RCAN/validation/X{}/".format(self.scale), type="test_baseline")
+        # dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/DIV2K/pretrain_DIV2K_RCAN/", lrtype='bicubic', type='train')   
 
         log_dir = os.path.join(self.log_dir, self.ckpt_name, "log")
         if not os.path.exists(log_dir):
