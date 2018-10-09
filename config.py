@@ -201,7 +201,7 @@ class config:
 		train_config["mode"] = "small" # Operation mode: normal or freq [normal]
 		train_config["epoch"] = 40000  # Number of epoch [10]
 		train_config["batch_size"] = 16 # The size of batch images [128]
-		train_config["image_size"] = 48 # The size of image to use [33]
+		train_config["image_size"] = 24 # The size of image to use [33]
 		train_config["label_size"] = 96 # The size of label to produce [21]
 		train_config["learning_rate"] = 1e-4 #The learning rate of gradient descent algorithm [1e-4]
 		train_config["color_dim"] = 3 # Dimension of image color. [1]
@@ -217,7 +217,8 @@ class config:
 		train_config["train_h5_name"] = "train" # Name of train dataset .h5 file
 		train_config["test_h5_name"] = "test" # Name of test dataset .h5 file
                      
-		train_config["ckpt_name"] = "RCAN_WGAN_att_v1" # Name of checkpoints 0.1 [1,1,1,1] ******************************                       
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1" # Name of checkpoints 0.1 [1,1,1,1] ******************************                       
+		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5" # Name of checkpoints 0.1 [1,1,1,1] ******************************                               
                                    
 		train_config["is_train"] = True # True for training, False for testing [True]
 		train_config["model_ticket"] = "RCAN_WGAN_att" # Name of checkpoints
@@ -227,15 +228,13 @@ class config:
 						
 			mconfig = {}
 			
-			mconfig["EDSR_WGAN_att"] = {
+			mconfig["RCAN_WGAN_att"] = {
 
 										"scale":[1],
-										"subimages":(80, 80, 3), #V1:[96,96]
+										#"subimages":(80, 80, 3), #V1:[96,96]
+										"subimages":(40, 40, 3), #V1:[96,96]                                        
 										"padding":8,
-										"ckpt_file":"/home/wei/ML/model/SuperResolution/SR-project-prototype/025_10_full_PatchWGAN-GP_v4_ep0_MSE_lp_28/best_performance/025_10_full_PatchWGAN-GP_v4_ep0_MSE_lp_28_0.0010903702350333333-70400",
-#										"ckpt_file":"/home/wei/ML/model/SuperResolution/SR-project-prototype/025_10_full_PatchWGAN-GP_v4_ep0_MSE_lp_28/025_10_full_PatchWGAN-GP_v4_ep0_MSE_lp_28-81950",
-#										"ckpt_file":"/mnt/GPU_Server/ML/model/SuperResolution/SR-project-prototype/025_10_full_PatchWGAN-GP_v4_ep0_MSE_lp_28_layer1_3_pre/025_10_full_PatchWGAN-GP_v4_ep0_MSE_lp_28_layer1_3_pre-272525",                                        
-#										"ckpt_file":"/home/wei/ML/model/SuperResolution/SR-project-prototype/training_data/EDSR_WGAN_att_v1_x2_95_full/best_performance/EDSR_WGAN_att_v1_x2_95_full_0.009988665580749512-5225",
+										"ckpt_file":"/home/wei/ML/model/SuperResolution/SR-project-AttWGAN/Temp/RCAN_WGAN_att_v1_RG_3_RCAB_5-85030",
 										"isGray": False,
 										"isNormallized":True,
 										"upsample": False,
@@ -247,7 +246,7 @@ class config:
 			return mconfig
 
 		eval_config = self.config["evaluation"]
-		eval_config["dataroot"] = '/data/wei/dataset/SuperResolution/eval_input/'        
+		eval_config["dataroot"] = '/home/sdc1/dataset/SuperResolution/eval_input/'        
 		eval_config["models"] = [RCAN_WGAN_att(self)]
 		eval_config["summary_file"] = "example_summary.txt"
         
