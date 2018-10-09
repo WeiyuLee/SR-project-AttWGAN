@@ -278,7 +278,7 @@ class MODEL(object):
            lr_list.append(misc.imread(lr_imgs[0][i]))
            if lrtype == 'all':
             lr_list2.append(misc.imread(lr_imgs[1][i]))
-           if lrtype == 'bicubic' and i > 32: break # for tuning hyperparameters
+#           if lrtype == 'bicubic' and i > 32: break # for tuning hyperparameters
 #           if lrtype == 'bicubic' and i > 8: break # for tuning hyperparameters
 
         print("[load_divk] type: [{}], lrtype: [{}]".format(type, lrtype))
@@ -1431,8 +1431,9 @@ class MODEL(object):
 
         # Define dataset path
         #96X96
-        test_dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/Set5/pretrain_Set5/validation/X{}/".format(self.scale), type="test_baseline")
+#        test_dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/Set5/pretrain_Set5/validation/X{}/".format(self.scale), type="test_baseline")
 #        dataset = self.load_divk("/home/wei/ML/dataset/SuperResolution/DIV2K/pretrain_DIV2K/", lrtype='bicubic', type='train') 
+        test_dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/Set5/pretrain_Set5_RCAN/validation/X{}/".format(self.scale), type="test_baseline")
         dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/DIV2K/pretrain_DIV2K_RCAN/", lrtype='bicubic', type='train')   
 
         log_dir = os.path.join(self.log_dir, self.ckpt_name, "log")
