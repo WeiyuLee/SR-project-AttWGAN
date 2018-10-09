@@ -249,6 +249,63 @@ class config:
 		eval_config["dataroot"] = '/home/sdc1/dataset/SuperResolution/eval_input/'        
 		eval_config["models"] = [RCAN_WGAN_att(self)]
 		eval_config["summary_file"] = "example_summary.txt"
+
+	def RCAN_RSGAN_GP_att(self):
+
+		train_config = self.config["train"]
+
+		train_config["mode"] = "small" # Operation mode: normal or freq [normal]
+		train_config["epoch"] = 40000  # Number of epoch [10]
+		train_config["batch_size"] = 16 # The size of batch images [128]
+		train_config["image_size"] = 24 # The size of image to use [33]
+		train_config["label_size"] = 96 # The size of label to produce [21]
+		train_config["learning_rate"] = 1e-4 #The learning rate of gradient descent algorithm [1e-4]
+		train_config["color_dim"] = 3 # Dimension of image color. [1]
+		train_config["scale"] = 4 # The size of scale factor for preprocessing input image [3]
+		train_config["train_extract_stride"] = 14 #The size of stride to apply input image [14]
+		train_config["test_extract_stride"] = train_config["label_size"] #The size of stride to apply input image [14]
+		train_config["checkpoint_dir"] = "/home/wei/ML/model/SuperResolution/SR-project-AttWGAN/" #Name of checkpoint directory [checkpoint]
+		train_config["log_dir"] = "/home/wei/ML/model/SuperResolution/SR-project-AttWGAN/log/" #Name of checkpoint directory [checkpoint]
+		train_config["output_dir"] = "output" # Name of sample directory [output]
+		train_config["train_dir"] =  "Train" # Name of train dataset directory
+		train_config["test_dir"] = "Test/Set5" # Name of test dataset directory [Test/Set5]
+		train_config["h5_dir"] = "/home/wei/ML/dataset/SuperResolution/train" # Name of train dataset .h5 file
+		train_config["train_h5_name"] = "train" # Name of train dataset .h5 file
+		train_config["test_h5_name"] = "test" # Name of test dataset .h5 file
+                     
+#		train_config["ckpt_name"] = "RCAN_RSGAN_GP_att_v1_RG_3_RCAB_5_025_10" # Name of checkpoints 0.1 [1,1,1,1] ******************************                               
+#		train_config["ckpt_name"] = "RCAN_RSGAN_GP_att_v1_RG_3_RCAB_5_025_20" # Name of checkpoints 0.1 [1,1,1,1] ******************************                                       
+		train_config["ckpt_name"] = "RCAN_RSGAN_GP_att_v1_RG_3_RCAB_5_025_50" # Name of checkpoints 0.1 [1,1,1,1] ******************************                                               
+                                   
+		train_config["is_train"] = True # True for training, False for testing [True]
+		train_config["model_ticket"] = "RCAN_RSGAN_GP_att" # Name of checkpoints
+		train_config["curr_epoch"] = 0 # Name of checkpoints        
+        
+		def RCAN_RSGAN_GP_att(self):
+						
+			mconfig = {}
+			
+			mconfig["RCAN_RSGAN_GP_att"] = {
+
+										"scale":[1],
+										#"subimages":(80, 80, 3), #V1:[96,96]
+										"subimages":(40, 40, 3), #V1:[96,96]                                        
+										"padding":8,
+										"ckpt_file":"/home/wei/ML/model/SuperResolution/SR-project-AttWGAN/Temp/RCAN_RSGAN_GP_att_v1_RG_3_RCAB_5_025_10-10505",
+										"isGray": False,
+										"isNormallized":True,
+										"upsample": False,
+										"sub_mean":False,
+										"model_config" :{"d_inputs":None, "d_target":None, "scale":2, "feature_size":64, "reuse":False, "is_training":False, "net":"Gen"}
+										}
+			
+			
+			return mconfig
+
+		eval_config = self.config["evaluation"]
+		eval_config["dataroot"] = '/data/wei/dataset/SuperResolution/eval_input/'        
+		eval_config["models"] = [RCAN_RSGAN_GP_att(self)]
+		eval_config["summary_file"] = "example_summary.txt"
         
 	def EDSR_WGAN_MNIST(self):
 
