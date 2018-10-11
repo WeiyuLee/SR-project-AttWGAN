@@ -208,8 +208,8 @@ class config:
 		train_config["scale"] = 4 # The size of scale factor for preprocessing input image [3]
 		train_config["train_extract_stride"] = 14 #The size of stride to apply input image [14]
 		train_config["test_extract_stride"] = train_config["label_size"] #The size of stride to apply input image [14]
-		train_config["checkpoint_dir"] = "/home/wei/ML/model/SuperResolution/SR-project-AttWGAN/" #Name of checkpoint directory [checkpoint]
-		train_config["log_dir"] = "/home/wei/ML/model/SuperResolution/SR-project-AttWGAN/log/" #Name of checkpoint directory [checkpoint]
+		train_config["checkpoint_dir"] = "/home/sdc1/model/SuperResolution/SR-project-AttWGAN/" #Name of checkpoint directory [checkpoint]
+		train_config["log_dir"] = "/home/sdc1/model/SuperResolution/SR-project-AttWGAN/log/" #Name of checkpoint directory [checkpoint]
 		train_config["output_dir"] = "output" # Name of sample directory [output]
 		train_config["train_dir"] =  "Train" # Name of train dataset directory
 		train_config["test_dir"] = "Test/Set5" # Name of test dataset directory [Test/Set5]
@@ -218,7 +218,12 @@ class config:
 		train_config["test_h5_name"] = "test" # Name of test dataset .h5 file
                      
 #		train_config["ckpt_name"] = "RCAN_WGAN_att_v1" # Name of checkpoints 0.1 [1,1,1,1] ******************************                       
-		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5" # Name of checkpoints 0.1 [1,1,1,1] ******************************                               
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5" # Name of checkpoints 0.1 [1,1,1,1] ******************************                               
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_025_20" # Name of checkpoints 0.1 [1,1,1,1] ******************************                  
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_025_50" # Name of checkpoints 0.1 [1,1,1,1] ******************************                 
+
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_025_05" # Name of checkpoints 0.1 [1,1,1,1] ******************************                 
+		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_025_1" # Name of checkpoints 0.1 [1,1,1,1] ******************************                         
                                    
 		train_config["is_train"] = True # True for training, False for testing [True]
 		train_config["model_ticket"] = "RCAN_WGAN_att" # Name of checkpoints
@@ -234,7 +239,7 @@ class config:
 										#"subimages":(80, 80, 3), #V1:[96,96]
 										"subimages":(40, 40, 3), #V1:[96,96]                                        
 										"padding":8,
-										"ckpt_file":"/home/wei/ML/model/SuperResolution/SR-project-AttWGAN/Temp/RCAN_WGAN_att_v1_RG_3_RCAB_5-85030",
+										"ckpt_file":"/home/sdc1/model/SuperResolution/SR-project-AttWGAN/Temp/RCAN_WGAN_att_v1_RG_3_RCAB_5_025_20-223300",
 										"isGray": False,
 										"isNormallized":True,
 										"upsample": False,

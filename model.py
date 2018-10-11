@@ -1328,9 +1328,11 @@ class MODEL(object):
         ### Build model       
         gen_f = mz.build_model({"d_inputs":None, "scale":self.scale, "feature_size" :64, "reuse":False, "is_training":True, "net":"Gen"})
 
-        dis_t, lp_t = mz.build_model({"d_inputs":self.target, "scale":self.scale, "feature_size" :64, "reuse":False, "is_training":True, "net":"Dis", "d_model":"PatchWGAN_GP"})
-        dis_f, lp_f = mz.build_model({"d_inputs":gen_f, "scale":self.scale, "feature_size" :64, "reuse":True, "is_training":True, "net":"Dis", "d_model":"PatchWGAN_GP"})           
-
+#        dis_t, lp_t = mz.build_model({"d_inputs":self.target, "scale":self.scale, "feature_size" :64, "reuse":False, "is_training":True, "net":"Dis", "d_model":"PatchWGAN_GP"})
+#        dis_f, lp_f = mz.build_model({"d_inputs":gen_f, "scale":self.scale, "feature_size" :64, "reuse":True, "is_training":True, "net":"Dis", "d_model":"PatchWGAN_GP"})           
+        dis_t, lp_t = mz.build_model({"d_inputs":self.target, "scale":self.scale, "feature_size" :64, "reuse":False, "is_training":True, "net":"Dis", "d_model":"PatchWGAN_GP_att"})
+        dis_f, lp_f = mz.build_model({"d_inputs":gen_f, "scale":self.scale, "feature_size" :64, "reuse":True, "is_training":True, "net":"Dis", "d_model":"PatchWGAN_GP_att"})        
+        
         #### WGAN-GP ####
         # Calculate gradient penalty
         self.epsilon = epsilon = tf.random_uniform([self.curr_batch_size, 1, 1, 1], 0.0, 1.0)
@@ -1346,13 +1348,15 @@ class MODEL(object):
         
         perceptual_loss = tf.pow(lp_t - lp_f, 2)
 
-        reconstucted_weight = 10.0
+#        reconstucted_weight = 0.5
+        reconstucted_weight = 1.0        
 
         lp_weight = 0.25 
 
         self.d_loss =   (disc_fake_loss - disc_ture_loss) + d_gp
 
-        self.g_l2loss = tf.reduce_mean(tf.pow(target-gen_f, 2))
+        #self.g_l2loss = tf.reduce_mean(tf.pow(target-gen_f, 2))
+        self.g_l2loss = tf.reduce_mean(tf.abs(target- gen_f))
 
         self.g_loss = -1.0*disc_fake_loss + reconstucted_weight*self.g_l2loss + lp_weight*perceptual_loss
 
@@ -1363,6 +1367,12 @@ class MODEL(object):
         self.train_g = tf.train.AdamOptimizer(self.lr, beta1=0.5, beta2=0.9).minimize(self.g_loss, var_list=generator_variables)
 
         self.g_output = gen_f
+        
+        print("=====================================================================================")
+        print("[Hyperparameters]")
+        print("reconstucted_weight: ", reconstucted_weight)
+        print("lp_weight: ", lp_weight)
+        print("=====================================================================================")
         
         mse = tf.reduce_mean(tf.squared_difference(target*255.,gen_f*255.))    
         PSNR = tf.constant(255**2,dtype=tf.float32)/mse
@@ -1419,11 +1429,10 @@ class MODEL(object):
 
         # Define dataset path
         #96X96
-        #test_dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/Set5/pretrain_Set5_RCAN/validation/X{}/".format(self.scale), type="test_baseline")
-        #dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/DIV2K/pretrain_DIV2K_RCAN/", lrtype='bicubic', type='train')   
-
-        test_dataset = self.load_divk("/home/wei/ML/dataset/SuperResolution/Set5/pretrain_Set5_RCAN/validation/X{}/".format(self.scale), type="test_baseline")
-        dataset = self.load_divk("/home/wei/ML/dataset/SuperResolution/DIV2K/pretrain_DIV2K_RCAN/", lrtype='bicubic', type='train')   
+#        test_dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/Set5/pretrain_Set5/validation/X{}/".format(self.scale), type="test_baseline")
+#        dataset = self.load_divk("/home/wei/ML/dataset/SuperResolution/DIV2K/pretrain_DIV2K/", lrtype='bicubic', type='train') 
+        test_dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/Set5/pretrain_Set5_RCAN/validation/X{}/".format(self.scale), type="test_baseline")
+        dataset = self.load_divk("/home/sdc1/dataset/SuperResolution/DIV2K/pretrain_DIV2K_RCAN/", lrtype='bicubic', type='train')   
 
         log_dir = os.path.join(self.log_dir, self.ckpt_name, "log")
         if not os.path.exists(log_dir):

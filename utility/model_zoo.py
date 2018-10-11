@@ -449,7 +449,6 @@ class model_zoo:
             d_model = kwargs["d_model"]            
             
             ### Discriminator
-            num_resblock = 2
             
             input_gan = d_inputs 
             
@@ -459,8 +458,8 @@ class model_zoo:
 
                     layer1_1 = nf.convolution_layer(input_gan,    model_params["conv1_wgan"],    [1,1,1,1], name="conv1_wgan_1",     activat_fn=nf.lrelu, initializer=init)
                     layer1_2 = nf.convolution_layer(layer1_1,    model_params["conv1_wgan"],    [1,1,1,1], name="conv1_wgan_2",     activat_fn=nf.lrelu, initializer=init)
-                    layer1_3 = nf.convolution_layer(layer1_1 + layer1_2,       model_params["conv1_wgan"],    [1,2,2,1], name="conv1_wgan_3",     activat_fn=nf.lrelu, initializer=init)
-#                    layer1_3 = nf.convolution_layer(layer1_1 + layer1_2,       model_params["conv1_wgan"],    [1,1,1,1], name="conv1_wgan_3",     activat_fn=nf.lrelu, initializer=init)
+                    layer1_3_before = nf.convolution_layer(layer1_1 + layer1_2,       model_params["conv1_wgan"],    [1,2,2,1], name="conv1_wgan_3",     activat_fn=None, initializer=init)
+                    layer1_3 = nf.lrelu(layer1_3_before)
                     
                     layer2_1 = nf.convolution_layer(layer1_3,       model_params["conv2_wgan"],    [1,1,1,1], name="conv2_wgan_1",     activat_fn=nf.lrelu, initializer=init)
                     layer2_2 = nf.convolution_layer(layer2_1,       model_params["conv2_wgan"],    [1,1,1,1], name="conv2_wgan_2",     activat_fn=nf.lrelu, initializer=init)
@@ -477,31 +476,32 @@ class model_zoo:
                             
                     d_logits = output
 
-                    return [d_logits, tf.reduce_mean(layer1_3)]
+                    return [d_logits, tf.reduce_mean(layer1_3_before)]
 
-                if d_model is "Temp":    
+                elif d_model is "PatchWGAN_GP_att":
 
                     layer1_1 = nf.convolution_layer(input_gan,    model_params["conv1_wgan"],    [1,1,1,1], name="conv1_wgan_1",     activat_fn=nf.lrelu, initializer=init)
                     layer1_2 = nf.convolution_layer(layer1_1,    model_params["conv1_wgan"],    [1,1,1,1], name="conv1_wgan_2",     activat_fn=nf.lrelu, initializer=init)
-                    layer1_3 = nf.convolution_layer(layer1_1 + layer1_2,       model_params["conv1_wgan"],    [1,2,2,1], name="conv1_wgan_3",     activat_fn=nf.lrelu, initializer=init)
-#                    layer1_3 = nf.convolution_layer(layer1_1 + layer1_2,       model_params["conv1_wgan"],    [1,1,1,1], name="conv1_wgan_3",     activat_fn=nf.lrelu, initializer=init)
-                    
-                    layer2_1 = nf.convolution_layer(layer1_3,       model_params["conv2_wgan"],    [1,1,1,1], name="conv2_wgan_1",     activat_fn=nf.lrelu, initializer=init)
+                    layer1_3_before = nf.convolution_layer(layer1_1 + layer1_2,       model_params["conv1_wgan"],    [1,2,2,1], name="conv1_wgan_3",     activat_fn=None, initializer=init)
+                    layer1_3 = nf.lrelu(layer1_3_before)
+                    layer1_att = nf.attention_RCAN(layer1_3, init, name="conv1_att")
+
+                    layer2_1 = nf.convolution_layer(layer1_att,       model_params["conv2_wgan"],    [1,1,1,1], name="conv2_wgan_1",     activat_fn=nf.lrelu, initializer=init)
                     layer2_2 = nf.convolution_layer(layer2_1,       model_params["conv2_wgan"],    [1,1,1,1], name="conv2_wgan_2",     activat_fn=nf.lrelu, initializer=init)
                     layer2_3 = nf.convolution_layer(layer2_1 + layer2_2,       model_params["conv2_wgan"],    [1,2,2,1], name="conv2_wgan_3",     activat_fn=nf.lrelu, initializer=init)
-#                    layer2_3 = nf.convolution_layer(layer2_1 + layer2_2,       model_params["conv2_wgan"],    [1,1,1,1], name="conv2_wgan_3",     activat_fn=nf.lrelu, initializer=init)
-                            
-                    layer3_1 = nf.convolution_layer(layer2_3,       model_params["conv3_wgan"],    [1,1,1,1], name="conv3_wgan_1",     activat_fn=nf.lrelu, initializer=init)
+                    layer2_att = nf.attention_RCAN(layer2_3, init, name="conv2_att")
+
+                    layer3_1 = nf.convolution_layer(layer2_att,       model_params["conv3_wgan"],    [1,1,1,1], name="conv3_wgan_1",     activat_fn=nf.lrelu, initializer=init)
                     layer3_2 = nf.convolution_layer(layer3_1,       model_params["conv3_wgan"],    [1,1,1,1], name="conv3_wgan_2",     activat_fn=nf.lrelu, initializer=init)
                     layer3_3 = nf.convolution_layer(layer3_1 + layer3_2,       model_params["conv3_wgan"],    [1,2,2,1], name="conv3_wgan_3",     activat_fn=nf.lrelu, initializer=init)
-#                    layer3_3 = nf.convolution_layer(layer3_1 + layer3_2,       model_params["conv3_wgan"],    [1,1,1,1], name="conv3_wgan_3",     activat_fn=nf.lrelu, initializer=init)
+                    layer3_att = nf.attention_RCAN(layer3_3, init, name="conv3_att")
 
-                    layer4_1 = nf.convolution_layer(layer3_3,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_1",  activat_fn=nf.lrelu, initializer=init)
+                    layer4_1 = nf.convolution_layer(layer3_att,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_1",  activat_fn=nf.lrelu, initializer=init)
                     output = nf.convolution_layer(layer4_1,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_2",  activat_fn=nf.lrelu, initializer=init)
-                            
+
                     d_logits = output
 
-                    return [d_logits, tf.reduce_mean(layer1_3)]
+                    return [d_logits, tf.reduce_mean(layer1_3_before)]
                 
                 else:
                     print("d_model parameter error!")
