@@ -104,7 +104,9 @@ class MODEL(object):
         
         self.model_ticket = model_ticket
 
-        self.model_list = ["RCAN_WGAN_att_on_dis_RG3_RCAB20", "RCAN_WGAN_att_on_dis", "EDSR_WGAN_att_on_dis_RCAN", "EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST", "EDSR_RaGAN_MNIST"]
+        self.model_list = ["RCAN_WGAN_att_on_dis_v2", "RCAN_WGAN_att_on_dis_RG3_RCAB20", "RCAN_WGAN_att_on_dis", 
+                            "EDSR_WGAN_att_on_dis_RCAN", "EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST",
+                             "EDSR_RaGAN_MNIST"]
 
         
         self.curr_epoch = curr_epoch
@@ -314,6 +316,12 @@ class MODEL(object):
         self.build_RCAN_WGAN_att()
 
     def train_RCAN_WGAN_att_on_dis(self):
+        self.train_RCAN_WGAN_att()
+
+    def build_RCAN_WGAN_att_on_dis_v2(self):
+        self.build_RCAN_WGAN_att()
+
+    def train_RCAN_WGAN_att_on_dis_v2(self):
         self.train_RCAN_WGAN_att()
 
     def build_RCAN_WGAN_att_on_dis_RG3_RCAB20(self):
@@ -1377,8 +1385,8 @@ class MODEL(object):
 
         self.d_loss =   (disc_fake_loss - disc_ture_loss) + d_gp
         self.g_l2loss = tf.reduce_mean(tf.pow(target-gen_f, 2))
-        self.g_l1loss = tf.reduce_mean(tf.losses.absolute_difference(target,gen_f))
-        self.g_loss = -1.0*disc_fake_loss + reconstucted_weight*self.g_l2loss + reconstucted_weight*self.g_l1loss + lp_weight*perceptual_loss
+        self.g_l1loss = tf.reduce_mean(tf.abs(target - gen_f))
+        self.g_loss = -1.0*disc_fake_loss + reconstucted_weight*self.g_l2loss  + lp_weight*perceptual_loss
 
         train_variables = tf.trainable_variables()
         generator_variables = [v for v in train_variables if v.name.startswith("RCAN_gen")]

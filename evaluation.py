@@ -31,7 +31,7 @@ class evaluation:
         self.ckpt_file = eval_conf['models'][0][model_ticket]["ckpt_file"]
         self.model_config = eval_conf['models'][0][model_ticket]["model_config"]
         self.scale = eval_conf['models'][0][model_ticket]["scale"][0]
-
+        self.save_path = eval_conf['save_path']
         print("checkpoint: ", self.ckpt_file)
 
     def input_setup(self):
@@ -218,8 +218,11 @@ class evaluation:
             merged_img = np.clip(merged_img, 0, 255).astype('uint8')
 
             test_img = scipy.misc.toimage(merged_img, high=np.max(merged_img), low=np.min(merged_img))
-            test_img = scipy.misc.toimage(merged_img, high=np.max(merged_img), low=np.min(merged_img))            
-            test_img.save("./evaluation/test/{}".format(img.split('/')[-1]))
+            test_img = scipy.misc.toimage(merged_img, high=np.max(merged_img), low=np.min(merged_img))   
+
+            if not os.path.exists(self.save_path):
+                os.makedirs(self.save_path)         
+            test_img.save(self.save_path+"{}".format(img.split('/')[-1]))
             #target_img.save("./evaluation/target/target_{}.png".format(progress))
             print("Process:{}/{}".format(progress, len(grid_imgs)))
             progress += 1
