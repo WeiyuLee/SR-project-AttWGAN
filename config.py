@@ -442,7 +442,7 @@ class config:
 		train_config["train_dir"] =  "/home/ubuntu/dataset/SuperResolution/pretrain_DIV2K_RCAN" # Name of train dataset directory
 		train_config["test_dir"] = "/home/ubuntu/dataset/SuperResolution/Set5/pretrain_Set5_RCAN/validation" # Name of test dataset directory [Test/Set5]
 #		train_config["ckpt_name"] = "RCAN_WGAN_att_v1" # Name of checkpoints 0.1 [1,1,1,1] ******************************                       
-		train_config["ckpt_name"] = "RCAN_WGAN_att_on_dis_v1" # Name of checkpoints 0.1 [1,1,1,1] ******************************                               
+		train_config["ckpt_name"] = "RCAN_WGAN_att_on_dis_v2" # Name of checkpoints 0.1 [1,1,1,1] ******************************                               
                                    
 		train_config["is_train"] = True # True for training, False for testing [True]
 		train_config["model_ticket"] = "RCAN_WGAN_att_on_dis" # Name of checkpoints
@@ -458,7 +458,7 @@ class config:
 										#"subimages":(80, 80, 3), #V1:[96,96]
 										"subimages":(40, 40, 3), #V1:[96,96]                                        
 										"padding":8,
-										"ckpt_file":"/home/wei/ML/model/SuperResolution/SR-project-AttWGAN/Temp/RCAN_WGAN_att_v1_RG_3_RCAB_5-85030",
+										"ckpt_file":"/home/ubuntu/model/model/SR_project/RCAN_WGAN_att_on_dis_v1/RCAN_WGAN_att_on_dis_v1-289630",
 										"isGray": False,
 										"isNormallized":True,
 										"upsample": False,
@@ -470,6 +470,62 @@ class config:
 			return mconfig
 
 		eval_config = self.config["evaluation"]
-		eval_config["dataroot"] = '/home/sdc1/dataset/SuperResolution/eval_input/'        
+		eval_config["dataroot"] = '/home/ubuntu/dataset/SuperResolution/RCAN/RCAN/Urban100/x4'        
 		eval_config["models"] = [RCAN_WGAN_att_on_dis(self)]
+		eval_config["summary_file"] = "example_summary.txt"     
+
+	def RCAN_WGAN_att_on_dis_RG3_RCAB20(self):
+        
+		train_config = self.config["train"]
+
+		train_config["mode"] = "small" # Operation mode: normal or freq [normal]
+		train_config["epoch"] = 40000  # Number of epoch [10]
+		train_config["batch_size"] = 16 # The size of batch images [128]
+		train_config["image_size"] = 24 # The size of image to use [33]
+		train_config["label_size"] = 96 # The size of label to produce [21]
+		train_config["learning_rate"] = 1e-4 #The learning rate of gradient descent algorithm [1e-4]
+		train_config["color_dim"] = 3 # Dimension of image color. [1]
+		train_config["scale"] = 4 # The size of scale factor for preprocessing input image [3]
+		train_config["train_extract_stride"] = 14 #The size of stride to apply input image [14]
+		train_config["test_extract_stride"] = train_config["label_size"] #The size of stride to apply input image [14]
+		train_config["output_dir"] = "output" # Name of sample directory [output]
+		train_config["h5_dir"] = "/home/wei/ML/dataset/SuperResolution/train" # Name of train dataset .h5 file
+		train_config["train_h5_name"] = "train" # Name of train dataset .h5 file
+		train_config["test_h5_name"] = "test" # Name of test dataset .h5 file
+        
+		train_config["checkpoint_dir"] = "/home/ubuntu/model/model/SR_project" #Name of checkpoint directory [checkpoint]
+		train_config["log_dir"] = "/home/ubuntu/model/model/SR_project/log/" #Name of checkpoint directory [checkpoint]
+		train_config["train_dir"] =  "/home/ubuntu/dataset/SuperResolution/pretrain_DIV2K_RCAN" # Name of train dataset directory
+		train_config["test_dir"] = "/home/ubuntu/dataset/SuperResolution/Set5/pretrain_Set5_RCAN/validation" # Name of test dataset directory [Test/Set5]
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1" # Name of checkpoints 0.1 [1,1,1,1] ******************************                       
+		train_config["ckpt_name"] = "RCAN_WGAN_att_on_dis_RG3_RCAB20_v1" # Name of checkpoints 0.1 [1,1,1,1] ******************************                               
+                                   
+		train_config["is_train"] = True # True for training, False for testing [True]
+		train_config["model_ticket"] = "RCAN_WGAN_att_on_dis_RG3_RCAB20" # Name of checkpoints
+		train_config["curr_epoch"] = 0 # Name of checkpoints        
+        
+		def RCAN_WGAN_att_on_dis_RG3_RCAB20(self):
+						
+			mconfig = {}
+			
+			mconfig["RCAN_WGAN_att_on_dis_RG3_RCAB20"] = {
+
+										"scale":[1],
+										#"subimages":(80, 80, 3), #V1:[96,96]
+										"subimages":(40, 40, 3), #V1:[96,96]                                        
+										"padding":8,
+										"ckpt_file":"/home/ubuntu/model/model/SR_project/RCAN_WGAN_att_on_dis_v1/RCAN_WGAN_att_on_dis_v1-289630",
+										"isGray": False,
+										"isNormallized":True,
+										"upsample": False,
+										"sub_mean":False,
+										"model_config" :{"d_inputs":None, "d_target":None, "scale":2, "feature_size":64, "reuse":False, "is_training":False, "net":"Gen"}
+										}
+			
+			
+			return mconfig
+
+		eval_config = self.config["evaluation"]
+		eval_config["dataroot"] = '/home/ubuntu/dataset/SuperResolution/RCAN/RCAN/Urban100/x4'        
+		eval_config["models"] = [RCAN_WGAN_att_on_dis_RG3_RCAB20(self)]
 		eval_config["summary_file"] = "example_summary.txt"       

@@ -408,7 +408,7 @@ def attention_RCAN(layer_input, initializer, name ,shrink_ratio = 0.25):
     
     _ , _, _, c = layer_input.get_shape().as_list()
 
-    with tf.variable_scope("attention_RCAN"):   
+    with tf.variable_scope(name):   
         att_net = tf.reduce_mean(layer_input, axis=[1,2], keep_dims=True)
         att_net = convolution_layer(att_net, [1,1,int(c*shrink_ratio)], [1,1,1,1],name=name+"down_scaling", activat_fn=tf.nn.relu, initializer=initializer)
         att_net = convolution_layer(att_net, [1,1,c], [1,1,1,1],name=name+"up_scaling", activat_fn=tf.nn.sigmoid, initializer=initializer)
