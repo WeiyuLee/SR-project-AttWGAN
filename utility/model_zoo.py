@@ -864,7 +864,7 @@ class model_zoo:
 
 
                     layer4_1 = nf.convolution_layer(layer3_att+layer3_1,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_1",  activat_fn=nf.lrelu, initializer=init)
-                    layer4_2 = nf.convolution_layer(layer4_1,       model_params["d_output_wgan"], [1,2,2,1], name="d_output_wgan_2",  activat_fn=nf.lrelu, initializer=init)
+                    layer4_2 = nf.convolution_layer(layer4_1,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_2",  activat_fn=nf.lrelu, initializer=init)
                     output = nf.convolution_layer(layer4_2,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_3",  activat_fn=nf.lrelu, initializer=init)
                             
                     d_logits = output
@@ -929,7 +929,7 @@ class model_zoo:
                 return RCAB_output
 
         # RG
-        def residual_group(image_input, initializer, name, RCAB_num=10):
+        def residual_group(image_input, initializer, name, RCAB_num=3):
             
             with tf.variable_scope("RG_"+name):
                 
@@ -944,7 +944,7 @@ class model_zoo:
                 return RG_output
 
         # RIR
-        def residual_in_residual(image_input, initializer, name, RG_num=6):
+        def residual_in_residual(image_input, initializer, name, RG_num=1):
             
             with tf.variable_scope("RIR"):
                 
@@ -998,10 +998,151 @@ class model_zoo:
                     layer3_2 = nf.convolution_layer(layer3_1,       model_params["conv3_wgan"],    [1,1,1,1], name="conv3_wgan_2",     activat_fn=nf.lrelu, initializer=init)
                     layer3_3 = nf.convolution_layer(layer3_2,       model_params["conv3_wgan"],    [1,1,1,1], name="conv3_wgan_3",     activat_fn=nf.lrelu, initializer=init)
                     layer3_att = nf.attention_RCAN(layer3_3, init, name="conv3_att")
-                    
+
                     layer4_1 = nf.convolution_layer(layer3_att+layer3_1,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_1",  activat_fn=nf.lrelu, initializer=init)
                     #layer4_2 = nf.convolution_layer(layer4_1,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_2",  activat_fn=nf.lrelu, initializer=init)
                     output = nf.convolution_layer(layer4_1,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_3",  activat_fn=nf.lrelu, initializer=init)
+                            
+                    d_logits = output
+
+                    return [d_logits, tf.reduce_mean(layer1_3)]
+                
+                else:
+                    print("d_model parameter error!")
+                    
+            return d_logits
+
+    def RCAN_WGAN_att_on_dis_v3(self, kwargs):
+        
+        reuse = kwargs["reuse"]
+        d_inputs = kwargs["d_inputs"]
+        net = kwargs["net"]
+        
+        init = tf.random_normal_initializer(stddev=0.01)
+
+        feature_size = 64
+
+        DEPTH = 64
+
+        model_params = {
+
+                        # Generator                        
+                        'conv1': [3,3,feature_size],
+                        'output_conv': [3,3,3],
+
+                        # Discriminator                        
+                        'conv1_wgan': [5,5,DEPTH],
+                        'conv2_wgan': [5,5,DEPTH*2], 
+                        'conv3_wgan': [5,5,DEPTH*4], 
+                        'conv4_wgan': [5,5,DEPTH*8], 
+                        'd_output_wgan': [5,5,1],                                       
+
+                        }
+        
+        # CA
+        def channel_attention(image_input, initializer, name, shrink_ratio=0.25):
+
+            _,_ , _, c = image_input.get_shape().as_list()
+        
+            with tf.variable_scope("CA"):
+               att_net = tf.reduce_mean(image_input, axis=[1,2], keep_dims=True)
+               att_net = nf.convolution_layer(att_net, [1,1,int(c*shrink_ratio)], [1,1,1,1], name=name+"_down_scaling", activat_fn=tf.nn.relu, initializer=initializer)
+               att_net = nf.convolution_layer(att_net, [1,1,c], [1,1,1,1], name=name+"_up_scaling", activat_fn=tf.nn.sigmoid, initializer=initializer)
+               layer_output = tf.multiply(image_input, att_net, name=name+"output")
+               return layer_output                        
+            
+        # RCAB
+        def residual_channel_attention_block(image_input, initializer, name):
+            
+            with tf.variable_scope("RCAB_"+name):
+                x = nf.convolution_layer(image_input, model_params["conv1"], [1,1,1,1], name=name+"_conv1", activat_fn=tf.nn.relu, initializer=initializer)
+                x = nf.convolution_layer(x,           model_params["conv1"], [1,1,1,1], name=name+"_conv2", activat_fn=None, initializer=initializer)
+
+                CA_output = channel_attention(x, initializer=initializer, name="CA")
+
+                RCAB_output = tf.add(image_input, CA_output)
+                
+                return RCAB_output
+
+        # RG
+        def residual_group(image_input, initializer, name, RCAB_num=3):
+            
+            with tf.variable_scope("RG_"+name):
+                
+                x = image_input
+                
+                for i in range(RCAB_num):
+                    x = residual_channel_attention_block(x, initializer=initializer, name=str(i))
+
+                x = nf.convolution_layer(x, model_params["conv1"], [1,1,1,1], name=name+"_conv", activat_fn=None, initializer=initializer)    
+                RG_output = tf.add(x, image_input)
+                
+                return RG_output
+
+        # RIR
+        def residual_in_residual(image_input, initializer, name, RG_num=1):
+            
+            with tf.variable_scope("RIR"):
+                
+                x = image_input
+                
+                for i in range(RG_num):
+                    x = residual_group(x, initializer=initializer, name=str(i))
+
+                x = nf.convolution_layer(x, model_params["conv1"], [1,1,1,1], name=name+"_conv", activat_fn=None, initializer=initializer)    
+                RIR_output = tf.add(x, image_input)
+                
+                return RIR_output
+                
+        if net is "Gen":
+        
+            ### Generator
+            with tf.variable_scope("RCAN_gen", reuse=reuse):     
+                input_conv_output = nf.convolution_layer(self.inputs, model_params["conv1"], [1,1,1,1], name="input_conv", activat_fn=None, initializer=init)    
+
+                RIR_output = residual_in_residual(input_conv_output, initializer=init, name="RIR")
+
+                output_conv_output = nf.convolution_layer(RIR_output, model_params["output_conv"], [1,1,1,1], name="output_conv", activat_fn=None, initializer=init) 
+                interpolation_conv_output = nf.convolution_layer(output_conv_output+self.inputs, model_params["output_conv"], [1,1,1,1], name="output_conv2", activat_fn=None, initializer=init)               
+
+                return interpolation_conv_output
+
+        elif net is "Dis":
+            d_model = kwargs["d_model"]            
+            
+            ### Discriminator
+            input_gan = d_inputs 
+            
+            with tf.variable_scope("RCAN_dis", reuse=reuse):     
+
+                if d_model is "PatchWGAN_GP":
+
+                    layer0_1 = nf.convolution_layer(input_gan,    model_params["conv1_wgan"],    [1,1,1,1], name="conv0_wgan_1",     activat_fn=nf.lrelu, initializer=init)
+                    #layer0_2 = nf.convolution_layer(layer0_1,    model_params["conv1_wgan"],    [1,1,1,1], name="conv0_wgan_2",     activat_fn=nf.lrelu, initializer=init)    
+
+                    layer1_1 = nf.convolution_layer(layer0_1,    model_params["conv1_wgan"],    [1,2,2,1], name="conv1_wgan_1",     activat_fn=nf.lrelu, initializer=init)
+                    layer1_2 = nf.convolution_layer(layer1_1,    model_params["conv1_wgan"],    [1,1,1,1], name="conv1_wgan_2",     activat_fn=nf.lrelu, initializer=init)
+                    layer1_3 = nf.convolution_layer(layer1_2,       model_params["conv1_wgan"],    [1,1,1,1], name="conv1_wgan_3",     activat_fn=nf.lrelu, initializer=init)
+                    layer1_att = nf.attention_RCAN(layer1_3, init, name="conv1_att")
+                    
+                    layer5_1 = nf.convolution_layer(layer1_1 + layer1_att,    model_params["conv1_wgan"],    [1,1,1,1], name="conv5_wgan_1",     activat_fn=nf.lrelu, initializer=init)
+                    layer5_2 = nf.convolution_layer(layer5_1,    model_params["conv1_wgan"],    [1,1,1,1], name="conv5_wgan_2",     activat_fn=nf.lrelu, initializer=init)
+                    layer5_3 = nf.convolution_layer(layer5_2,       model_params["conv1_wgan"],    [1,1,1,1], name="conv5_wgan_3",     activat_fn=nf.lrelu, initializer=init)
+                    layer5_att = nf.attention_RCAN(layer5_3, init, name="conv5_att")
+                                     
+                    layer2_1 = nf.convolution_layer(layer5_1 + layer5_att,       model_params["conv2_wgan"],    [1,2,2,1], name="conv2_wgan_1",     activat_fn=nf.lrelu, initializer=init)
+                    layer2_2 = nf.convolution_layer(layer2_1,       model_params["conv2_wgan"],    [1,1,1,1], name="conv2_wgan_2",     activat_fn=nf.lrelu, initializer=init)
+                    layer2_3 = nf.convolution_layer(layer2_2,       model_params["conv2_wgan"],    [1,1,1,1], name="conv2_wgan_3",     activat_fn=nf.lrelu, initializer=init)
+                    layer2_att = nf.attention_RCAN(layer2_3, init, name="conv2_att")
+    
+                    layer3_1 = nf.convolution_layer(layer2_att+layer2_1,       model_params["conv3_wgan"],    [1,2,2,1], name="conv3_wgan_1",     activat_fn=nf.lrelu, initializer=init)
+                    layer3_2 = nf.convolution_layer(layer3_1,       model_params["conv3_wgan"],    [1,1,1,1], name="conv3_wgan_2",     activat_fn=nf.lrelu, initializer=init)
+                    layer3_3 = nf.convolution_layer(layer3_2,       model_params["conv3_wgan"],    [1,1,1,1], name="conv3_wgan_3",     activat_fn=nf.lrelu, initializer=init)
+                    layer3_att = nf.attention_RCAN(layer3_3, init, name="conv3_att")
+
+                    layer4_1 = nf.convolution_layer(layer3_att+layer3_1,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_1",  activat_fn=nf.lrelu, initializer=init)
+                    layer4_2 = nf.convolution_layer(layer4_1,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_2",  activat_fn=nf.lrelu, initializer=init)
+                    output = nf.convolution_layer(layer4_2,       model_params["d_output_wgan"], [1,1,1,1], name="d_output_wgan_3",  activat_fn=nf.lrelu, initializer=init)
                             
                     d_logits = output
 
@@ -1142,7 +1283,7 @@ class model_zoo:
 
     def build_model(self, kwargs = {}):
 
-        model_list = ["RCAN_WGAN_att_on_dis_v2", "RCAN_WGAN_att_on_dis_RG3_RCAB20", "RCAN_WGAN_att_on_dis", 
+        model_list = ["RCAN_WGAN_att_on_dis_v3", "RCAN_WGAN_att_on_dis_v2", "RCAN_WGAN_att_on_dis_RG3_RCAB20", "RCAN_WGAN_att_on_dis", 
                         "EDSR_WGAN_att_on_dis_RCAN", "EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "RCAN_WGAN_att", 
                         "EDSR_WGAN_MNIST", "EDSR_RaGAN_MNIST"]
         

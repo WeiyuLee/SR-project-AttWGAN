@@ -104,7 +104,7 @@ class MODEL(object):
         
         self.model_ticket = model_ticket
 
-        self.model_list = ["RCAN_WGAN_att_on_dis_v2", "RCAN_WGAN_att_on_dis_RG3_RCAB20", "RCAN_WGAN_att_on_dis", 
+        self.model_list = ["RCAN_WGAN_att_on_dis_v3", "RCAN_WGAN_att_on_dis_v2", "RCAN_WGAN_att_on_dis_RG3_RCAB20", "RCAN_WGAN_att_on_dis", 
                             "EDSR_WGAN_att_on_dis_RCAN", "EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST",
                              "EDSR_RaGAN_MNIST"]
 
@@ -322,6 +322,12 @@ class MODEL(object):
         self.build_RCAN_WGAN_att()
 
     def train_RCAN_WGAN_att_on_dis_v2(self):
+        self.train_RCAN_WGAN_att()
+
+    def build_RCAN_WGAN_att_on_dis_v3(self):
+        self.build_RCAN_WGAN_att()
+
+    def train_RCAN_WGAN_att_on_dis_v3(self):
         self.train_RCAN_WGAN_att()
 
     def build_RCAN_WGAN_att_on_dis_RG3_RCAB20(self):

@@ -222,7 +222,8 @@ class evaluation:
 
             if not os.path.exists(self.save_path):
                 os.makedirs(self.save_path)         
-            test_img.save(self.save_path+"{}".format(img.split('/')[-1]))
+            test_img.save(self.save_path+"/{}".format(img.split('/')[-1]))
+            print(self.save_path)
             #target_img.save("./evaluation/target/target_{}.png".format(progress))
             print("Process:{}/{}".format(progress, len(grid_imgs)))
             progress += 1
