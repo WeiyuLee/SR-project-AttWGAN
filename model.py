@@ -104,9 +104,10 @@ class MODEL(object):
         
         self.model_ticket = model_ticket
 
-        self.model_list = ["RCAN_WGAN_att_on_dis_v3", "RCAN_WGAN_att_on_dis_v2", "RCAN_WGAN_att_on_dis_RG3_RCAB20", "RCAN_WGAN_att_on_dis", 
+        self.model_list = ["RCAN_WGAN_att_on_dis_v2_ablation", "RCAN_WGAN_att_on_dis_v2_inter", "RCAN_WGAN_att_on_dis_v3", 
+                            "RCAN_WGAN_att_on_dis_v2", "RCAN_WGAN_att_on_dis_RG3_RCAB20", "RCAN_WGAN_att_on_dis", 
                             "EDSR_WGAN_att_on_dis_RCAN", "EDSR_RaGAN", "EDSR_WGAN", "EDSR_WGAN_att", "EDSR_WGAN_MNIST",
-                             "EDSR_RaGAN_MNIST"]
+                            "EDSR_RaGAN_MNIST"]
 
         
         self.curr_epoch = curr_epoch
@@ -335,7 +336,12 @@ class MODEL(object):
 
     def train_RCAN_WGAN_att_on_dis_RG3_RCAB20(self):
         self.train_RCAN_WGAN_att()
+     
+    def build_RCAN_WGAN_att_on_dis_v2_ablation(self):
+        self.build_RCAN_WGAN_att()
 
+    def train_RCAN_WGAN_att_on_dis_v2_ablation(self):
+        self.train_RCAN_WGAN_att()
 
     def build_EDSR_RaGAN(self):###
         """
@@ -1574,4 +1580,112 @@ class MODEL(object):
                     print("Current Loss: [{}]\n".format(best_loss))
                 
                 summary_writer.add_summary(train_sum, ep)
-                summary_writer.add_summary(test_sum, ep)                                                                      
+                summary_writer.add_summary(test_sum, ep)  
+
+    def build_RCAN_WGAN_att_on_dis_v2_inter(self):###
+        """
+        Build SRCNN model
+        """        
+        # Define input and label images
+        self.input = tf.placeholder(tf.float32, [None, self.image_size*2, self.image_size*2, self.color_dim], name='images')
+        self.image_target = tf.placeholder(tf.float32, [None, self.image_size*2, self.image_size*2, self.color_dim], name='labels')
+
+        self.curr_batch_size = tf.placeholder(tf.int32, shape=[])
+
+        self.dropout = tf.placeholder(tf.float32, name='dropout')
+        self.lr = tf.placeholder(tf.float32, name='learning_rate')
+
+        self.image_input = self.input/255.
+        self.target = target = self.image_target/255.
+        
+        # Initial model_zoo
+        mz = model_zoo.model_zoo(self.image_input, self.dropout, self.is_train, self.model_ticket)
+        
+        ### Build model       
+        gen_f, gen_inter_f = mz.build_model({"d_inputs":None, "scale":self.scale, "feature_size" :64, "reuse":False, "is_training":True, "net":"Gen"})
+        dis_t, lp_t = mz.build_model({"d_inputs":self.target, "scale":self.scale, "feature_size" :64, "reuse":False, "is_training":True, "net":"Dis", "d_model":"PatchWGAN_GP"})
+        dis_f, lp_f = mz.build_model({"d_inputs":gen_f, "scale":self.scale, "feature_size" :64, "reuse":True, "is_training":True, "net":"Dis", "d_model":"PatchWGAN_GP"})           
+
+        #### WGAN-GP ####
+        # Calculate gradient penalty
+        self.epsilon = epsilon = tf.random_uniform([self.curr_batch_size, 1, 1, 1], 0.0, 1.0)
+        x_hat = epsilon * self.target + (1. - epsilon) * (gen_f)
+        d_hat = mz.build_model({"d_inputs":x_hat, "scale":self.scale, "feature_size" :64, "reuse":True, "is_training":True, "net":"Dis", "d_model":"PatchWGAN_GP"})
+        
+        d_gp = tf.gradients(d_hat, [x_hat])[0]
+        d_gp = tf.sqrt(tf.reduce_sum(tf.square(d_gp), axis=[1,2,3]))
+        d_gp = tf.reduce_mean((d_gp - 1.0)**2) * 10
+
+        self.disc_ture_loss = disc_ture_loss = tf.reduce_mean(dis_t)
+        self.disc_fake_loss = disc_fake_loss = tf.reduce_mean(dis_f)
+        
+        perceptual_loss = tf.pow(lp_t - lp_f, 2)
+
+        reconstucted_weight = 25.0
+        reconstucted_weight_inter = 1.0
+
+        lp_weight = 0.25 
+
+        self.d_loss =   (disc_fake_loss - disc_ture_loss) + d_gp
+        self.g_l2loss = tf.reduce_mean(tf.pow(target-gen_f, 2))
+        self.g_l2loss_inter = tf.reduce_mean(tf.pow(target-gen_inter_f, 2))
+        self.g_loss = -1.0*disc_fake_loss + reconstucted_weight*self.g_l2loss  + lp_weight*perceptual_loss + reconstucted_weight_inter*self.g_l2loss_inter
+
+        train_variables = tf.trainable_variables()
+        generator_variables = [v for v in train_variables if v.name.startswith("RCAN_gen")]
+        discriminator_variables = [v for v in train_variables if v.name.startswith("RCAN_dis")]
+        self.train_d = tf.train.AdamOptimizer(self.lr, beta1=0.5, beta2=0.9).minimize(self.d_loss, var_list=discriminator_variables)
+        self.train_g = tf.train.AdamOptimizer(self.lr, beta1=0.5, beta2=0.9).minimize(self.g_loss, var_list=generator_variables)
+
+        self.g_output = gen_f
+        
+        mse = tf.reduce_mean(tf.squared_difference(target*255.,gen_f*255.))    
+        PSNR = tf.constant(255**2,dtype=tf.float32)/mse
+        PSNR = tf.constant(10,dtype=tf.float32)*log10(PSNR)
+
+        mse_ref = tf.reduce_mean(tf.squared_difference(target*255.,self.image_input*255.))    
+        PSNR_ref = tf.constant(255**2,dtype=tf.float32)/mse_ref
+        PSNR_ref = tf.constant(10,dtype=tf.float32)*log10(PSNR_ref)
+        
+        with tf.name_scope('train_summary'):
+            tf.summary.scalar("l2_loss", self.g_l2loss, collections=['train'])
+            tf.summary.scalar("d_loss", self.d_loss, collections=['train'])
+            tf.summary.scalar("d_true_loss", disc_ture_loss, collections=['train'])
+            tf.summary.scalar("d_fake_loss", disc_fake_loss, collections=['train'])
+            tf.summary.scalar("d_lp", perceptual_loss, collections=['train']) # for tuning
+            tf.summary.scalar("d_l2_inter", self.g_l2loss_inter, collections=['train']) # for tuning
+
+            tf.summary.scalar("MSE", mse, collections=['train'])
+            tf.summary.scalar("PSNR",PSNR, collections=['train'])
+            tf.summary.image("input_image",self.input , collections=['train'])
+            tf.summary.image("target_image",target*255, collections=['train'])
+            tf.summary.image("output_image",gen_f*255, collections=['train'])
+
+            tf.summary.histogram("d_false", dis_f, collections=['train']) 
+            tf.summary.histogram("d_true", dis_t, collections=['train']) 
+
+            
+            self.merged_summary_train = tf.summary.merge_all('train')          
+
+        with tf.name_scope('test_summary'):
+
+            tf.summary.scalar("l2_loss", self.g_l2loss, collections=['test'])
+            tf.summary.scalar("d_loss", self.d_loss, collections=['test'])
+            tf.summary.scalar("g_loss", disc_fake_loss, collections=['test'])
+            tf.summary.scalar("d_l2_inter", self.g_l2loss_inter, collections=['test'])
+            tf.summary.scalar("d_lp", perceptual_loss, collections=['test']) # for tuning
+            
+            tf.summary.scalar("MSE", mse, collections=['test'])
+            tf.summary.scalar("PSNR",PSNR, collections=['test'])
+            tf.summary.scalar("PSNR_ref",PSNR_ref, collections=['test'])
+            tf.summary.image("input_image",self.input , collections=['test'])
+            tf.summary.image("target_image",target*255, collections=['test'])
+            tf.summary.image("output_image",gen_f*255, collections=['test'])             
+        
+            self.merged_summary_test = tf.summary.merge_all('test')                    
+        
+        self.saver = tf.train.Saver()
+        self.best_saver = tf.train.Saver()       
+        
+    def train_RCAN_WGAN_att_on_dis_v2_inter(self):
+        self.train_RCAN_WGAN_att()
