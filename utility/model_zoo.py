@@ -1017,8 +1017,8 @@ class model_zoo:
         reuse = kwargs["reuse"]
         d_inputs = kwargs["d_inputs"]
         net = kwargs["net"]
-        g_rg =  1
-        g_rcba = 3
+        g_rg =  5
+        g_rcba = 6
         d_rcba =  3
         
         init = tf.random_normal_initializer(stddev=0.01)
@@ -1037,7 +1037,11 @@ class model_zoo:
                         'conv1_wgan': [5,5,DEPTH],
                         'conv2_wgan': [5,5,DEPTH*2], 
                         'conv3_wgan': [5,5,DEPTH*4], 
-                        'conv4_wgan': [5,5,DEPTH*8], 
+                        'conv4_wgan': [5,5,DEPTH*8],
+                        'conv5_wgan': [5,5,DEPTH*4],
+                        'conv6_wgan': [5,5,DEPTH*4],
+                        'conv7_wgan': [5,5,DEPTH*4],
+                        'conv8_wgan': [5,5,DEPTH*4], 
                         'd_output_wgan': [5,5,1],                                       
 
                         }

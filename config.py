@@ -538,7 +538,7 @@ class config:
 		train_config = self.config["train"]
 
 		train_config["mode"] = "small" # Operation mode: normal or freq [normal]
-		train_config["epoch"] = 500  # Number of epoch [10]
+		train_config["epoch"] = 750  # Number of epoch [10]
 		train_config["batch_size"] = 16 # The size of batch images [128]
 		train_config["image_size"] = 24 # The size of image to use [33]
 		train_config["label_size"] = 96 # The size of label to produce [21]
@@ -556,12 +556,12 @@ class config:
 		train_config["log_dir"] = "/home/ubuntu/model/model/SR_project/" #Name of checkpoint directory [checkpoint]
 		train_config["train_dir"] =  "/home/ubuntu/dataset/SuperResolution/pretrain_DIV2K_RCAN" # Name of train dataset directory
 		train_config["test_dir"] = "/home/ubuntu/dataset/SuperResolution/Set5/pretrain_Set5_RCAN/validation" # Name of test dataset directory [Test/Set5]
-		train_config["ckpt_name"] = "RCAN_WGAN_att_on_dis_disv2_ablation_RG1RCBA3D3" # Name of checkpoints 0.1 [1,1,1,1] ******************************                       
+		train_config["ckpt_name"] = "RCAN_WGAN_att_on_dis_disv2_ablation_RG5RCBA6D3" # Name of checkpoints 0.1 [1,1,1,1] ******************************                       
 		#train_config["ckpt_name"] = "RCAN_WGAN_att_on_dis_disv2_v1" # Name of checkpoints 0.1 [1,1,1,1] ******************************                               
                                    
 		train_config["is_train"] = True # True for training, False for testing [True]
 		train_config["model_ticket"] = "RCAN_WGAN_att_on_dis_v2_ablation" # Name of checkpoints
-		train_config["curr_epoch"] = 570 # Name of checkpoints        
+		train_config["curr_epoch"] = 0 # Name of checkpoints        
         
 		def RCAN_WGAN_att_on_dis_v2_ablation(self):
 						
@@ -585,8 +585,8 @@ class config:
 			return mconfig
 
 		eval_config = self.config["evaluation"]
-		eval_config["dataroot"] = '/home/ubuntu/dataset/SuperResolution/RCAN/RCAN/Set5/x4'    
-		eval_config["save_path"] = './evaluation/RCAN_WGAN_att_on_dis_disv2_RG3RCBA5/Set5'    
+		eval_config["dataroot"] = '/home/ubuntu/dataset/SuperResolution/BSD100/image_SRF_4/target'    
+		eval_config["save_path"] = './evaluation/gt/BSD100'    
 		eval_config["models"] = [RCAN_WGAN_att_on_dis_v2_ablation(self)]
 		eval_config["summary_file"] = "example_summary.txt"  
 
