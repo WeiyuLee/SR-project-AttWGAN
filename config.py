@@ -199,7 +199,7 @@ class config:
 		train_config = self.config["train"]
 
 		train_config["mode"] = "small" # Operation mode: normal or freq [normal]
-		train_config["epoch"] = 40000  # Number of epoch [10]
+		train_config["epoch"] = 5000  # Number of epoch [10]
 		train_config["batch_size"] = 16 # The size of batch images [128]
 		train_config["image_size"] = 24 # The size of image to use [33]
 		train_config["label_size"] = 96 # The size of label to produce [21]
@@ -208,8 +208,8 @@ class config:
 		train_config["scale"] = 4 # The size of scale factor for preprocessing input image [3]
 		train_config["train_extract_stride"] = 14 #The size of stride to apply input image [14]
 		train_config["test_extract_stride"] = train_config["label_size"] #The size of stride to apply input image [14]
-		train_config["checkpoint_dir"] = "/home/sdc1/model/SuperResolution/SR-project-AttWGAN/" #Name of checkpoint directory [checkpoint]
-		train_config["log_dir"] = "/home/sdc1/model/SuperResolution/SR-project-AttWGAN/log/" #Name of checkpoint directory [checkpoint]
+		train_config["checkpoint_dir"] = "/data/wei/model/SuperResolution/SR-project-AttWGAN/" #Name of checkpoint directory [checkpoint]
+		train_config["log_dir"] = "/data/wei/model/SuperResolution/SR-project-AttWGAN/log/" #Name of checkpoint directory [checkpoint]
 		train_config["output_dir"] = "output" # Name of sample directory [output]
 		train_config["train_dir"] =  "Train" # Name of train dataset directory
 		train_config["test_dir"] = "Test/Set5" # Name of test dataset directory [Test/Set5]
@@ -223,11 +223,49 @@ class config:
 #		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_025_50" # Name of checkpoints 0.1 [1,1,1,1] ******************************                 
 
 #		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_025_05" # Name of checkpoints 0.1 [1,1,1,1] ******************************                 
-		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_025_1" # Name of checkpoints 0.1 [1,1,1,1] ******************************                         
-                                   
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_025_1" # Name of checkpoints 0.1 [1,1,1,1] ******************************        
+
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_025_1_3x3" # Name of checkpoints 0.1 [1,1,1,1] ******************************                                                  
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_025_10" # Name of checkpoints 0.1 [1,1,1,1] ******************************                                 
+
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_001_1_001" # [GAN, Lp, L1] 
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_0005_1_0025" # [GAN, Lp, L1]         
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_0005_1_005" # [GAN, Lp, L1]         
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_0005_1_1" # [GAN, Lp, L1] ** GAN=1        
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_0005_1_5" # [GAN, Lp, L1] ** GAN=1            
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_005_1_0025" # [GAN, Lp, L1] ** GAN=1                    
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L1_DisAtt_01_1_0025" # [GAN, Lp, L1] ** GAN=1    
+        
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L2_DisAtt_interp_Add_sigmoid_1_025_10" # [GAN, Lp, L1]          
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L2_DisAtt_interp_sigmoid_1_025_10" # [GAN, Lp, L1]                  
+
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L2_DisAtt_interp_Add_relu_1_025_10" # [GAN, Lp, L1]             
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_3_RCAB_5_L2_DisAtt_interp_relu_1_025_10" # [GAN, Lp, L1]                     
+
+# Compact model
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_interp_Add_1_025_10" # [GAN, Lp, L1]                     
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_interp_Add_1_025_20" # [GAN, Lp, L1]               
+		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_interp_Add_1_025_50" # [GAN, Lp, L1]            
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_interp_Add_1_025_75" # [GAN, Lp, L1]             
+        
+
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_interp_Add_1_05_10" # [GAN, Lp, L1]                     
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_interp_Add_1_1_10" # [GAN, Lp, L1]         
+
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_interp_Add_1_025_10_before" # [GAN, Lp, L1]                     
+
+# without interp
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_wo_interp_1_025_10" # [GAN, Lp, L1]    
+# without attention
+#		train_config["ckpt_name"] = "RCAN_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_wo_att_1_025_10" # [GAN, Lp, L1]            
+# Stage1: DBPN
+#		train_config["ckpt_name"] = "DBPN_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_interp_Add_1_025_10" # [GAN, Lp, L1]            
+# Stage1: EDSR
+#		train_config["ckpt_name"] = "EDSR_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_interp_Add_1_025_10" # [GAN, Lp, L1]                  
+                                     
 		train_config["is_train"] = True # True for training, False for testing [True]
 		train_config["model_ticket"] = "RCAN_WGAN_att" # Name of checkpoints
-		train_config["curr_epoch"] = 0 # Name of checkpoints        
+		train_config["curr_epoch"] = 4591 # Name of checkpoints        
         
 		def RCAN_WGAN_att(self):
 						
@@ -239,19 +277,21 @@ class config:
 										#"subimages":(80, 80, 3), #V1:[96,96]
 										"subimages":(40, 40, 3), #V1:[96,96]                                        
 										"padding":8,
-										"ckpt_file":"/home/sdc1/model/SuperResolution/SR-project-AttWGAN/Temp/RCAN_WGAN_att_v1_RG_3_RCAB_5_025_20-223300",
+										"ckpt_file":"/data/wei/model/SuperResolution/SR-project-AttWGAN/RCAN_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_interp_Add_1_025_50/RCAN_WGAN_att_v1_RG_1_RCAB_3_L2_DisAtt_interp_Add_1_025_50-158180",
 										"isGray": False,
 										"isNormallized":True,
 										"upsample": False,
 										"sub_mean":False,
-										"model_config" :{"d_inputs":None, "d_target":None, "scale":2, "feature_size":64, "reuse":False, "is_training":False, "net":"Gen"}
+										"model_config" :{"d_inputs":None, "d_target":None, "scale":2, "feature_size":64, "reuse":False, "is_training":False, "net":"Gen", "net_size": [1, 3]}
 										}
 			
 			
 			return mconfig
 
 		eval_config = self.config["evaluation"]
-		eval_config["dataroot"] = '/home/sdc1/dataset/SuperResolution/eval_input/'        
+#		eval_config["dataroot"] = '/data/wei/dataset/SuperResolution/eval_input/'        
+#		eval_config["dataroot"] = '/data/wei/dataset/SuperResolution/RCAN/SR/BI/RCAN/B100/x4'                
+		eval_config["dataroot"] = '/data/wei/dataset/SuperResolution/RCAN/SR/BI/RCAN/PIRM/Validation/x4'                        
 		eval_config["models"] = [RCAN_WGAN_att(self)]
 		eval_config["summary_file"] = "example_summary.txt"
 
