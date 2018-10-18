@@ -219,7 +219,7 @@ class evaluation:
 
             test_img = scipy.misc.toimage(merged_img, high=np.max(merged_img), low=np.min(merged_img))
             test_img = scipy.misc.toimage(merged_img, high=np.max(merged_img), low=np.min(merged_img))            
-            test_img.save("./evaluation/test/{}".format(img.split('/')[-1]))
+            test_img.save("/data/wei/model/SuperResolution/SR-project-AttWGAN/evaluation/test/{}".format(img.split('/')[-1]))
             #target_img.save("./evaluation/target/target_{}.png".format(progress))
             print("Process:{}/{}".format(progress, len(grid_imgs)))
             progress += 1
